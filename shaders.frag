@@ -103,11 +103,12 @@ vec3 waterColor(vec2 coord, vec3 color, int N, vec2 c1, vec3 rgb)
         coord += vec2(c1.x + c1.y / i * sin(i * coord.y + u_time + 0.3 * i), 
             c1.x + c1.y / i * sin(coord.x + u_time + 0.3 * i));
     }
+    
     coord += vec2(c1.x + c1.y / sin(coord.y + u_time + 0.3), 
             c1.x + c1.y / sin(coord.x + u_time + 0.3));
-    color = vec3(rgb.x * sin(coord.x) + rgb.x, 
-        rgb.y * sin(coord.y) + rgb.y, 
-        rgb.z * sin(coord.x + coord.y));
+    color = vec3(rgb.r * sin(coord.x) + rgb.r, 
+        rgb.g * sin(coord.y) + rgb.y, 
+        rgb.b * sin(coord.x + coord.y));
     return color;
 }
 
@@ -145,6 +146,60 @@ vec3 waterColor2(vec2 coord, vec3 color)
     return waterColor2(coord, color, 6, vec3(2.0, 3.0, 1.5));
 }
 
+/*
+ * Creates warped vertical lines
+ */
+vec3 warpVerticalLines(vec2 coord, float a1, float b1, float a2, float b2)
+{
+    float fcolor = 0.0;
+    fcolor += 2.0 * sin(coord.x * a1 + cos(u_time + coord.y * 10.0 + 
+        sin(coord.x + 50.0 + u_time * 2.0)));
+    fcolor += 2.0 * cos(coord.x * b2 + sin(u_time + coord.y * 10.0 + 
+        cos(coord.x + 50.0 + u_time * 2.0)));
+    fcolor += 2.0 * sin(coord.x * a2 + cos(u_time + coord.y * 10.0 + 
+        sin(coord.x + 50.0 + u_time * 2.0)));
+    fcolor += 2.0 * cos(coord.x * b2 + sin(u_time + coord.y * 10.0 + 
+        cos(coord.x + 50.0 + u_time * 2.0)));
+
+    return vec3(fcolor + coord.x, fcolor + coord.y, fcolor);
+}
+
+/*
+ * Creates warped horizontal lines
+ */
+vec3 warpHorizontalLines(vec2 coord, float a1, float b1, float a2, float b2)
+{
+    float fcolor = 0.0;
+    fcolor += 0.5 * sin(coord.x * 6.0 + sin(u_time + coord.y * a1 + 
+        cos(coord.x * 30.0 + u_time * 2.0)));
+    fcolor += 0.5 * cos(coord.x * 6.0 + cos(u_time + coord.y * b1 + 
+        sin(coord.x * 30.0 + u_time * 2.0)));
+    fcolor += 0.5 * sin(coord.x * 6.0 + sin(u_time + coord.y * a2 + 
+        cos(coord.x * 30.0 + u_time * 2.0)));
+    fcolor += 0.5 * cos(coord.x * 6.0 + cos(u_time + coord.y * b2 + 
+        sin(coord.x * 30.0 + u_time * 2.0)));
+
+    return vec3(1. - fcolor + coord.x, 1. - fcolor + coord.y, 1. - fcolor);
+}
+
+/*
+ * Creates a colorful swirl shape
+ */
+vec3 swirl(vec2 coord, vec2 pos, float a1, float a2, float a3)
+{
+    float angle = atan(-coord.y + pos.x, coord.x - pos.y) * 0.5;
+    float len = length(coord - vec2(pos.x, pos.y));
+
+    vec3 color = vec3(0.0);
+
+    color.r += 20.0 * sin(len * a1 + angle * 40.0 + u_time) + 
+        0.5 * cos(a1 * u_time * 0.01);
+    color.g += 15.0 * sin(len * a2 + angle * 40.0 - u_time) + 
+        0.5 * cos(a1 * u_time * 0.01);
+    color.b += 20.0 * sin(len * a3 + angle * 50.0 + 3.0);
+
+    return color;
+}
 
 void main()
 {
@@ -155,7 +210,8 @@ void main()
     // translate coords
     vec2 coord = translate(_coord, vec2(0.0));
     //vec2 coord = translate(_coord, vec2(0.5* sin(u_time/2.), 0.5*cos(u_time)));
-    
+    //vec2 coord = gl_FragCoord.xy / u_resolution.xy;
+
     // scale
     // coord = scale(coord, vec2(sin(u_time)));
 
@@ -172,7 +228,14 @@ void main()
     
     //color = warpGrid(coord, color);
     //color = waterColor(coord, color, 3, vec2(0.8, 1.0), vec3(0.5, 0.5, 1.0));
-    color = waterColor2(coord, color, 6, vec3(2.0, 3.0, 1.5));
+    //color = waterColor2(coord, color, 6, vec3(.1, 2.0, 1.0));
+    
+    // warp lines
+    //color = warpVerticalLines(coord, 50.0, 30.0, 20.0, 10.0);
+    //color = warpHorizontalLines(coord, 50.0, 50.0, 10.0, 10.0);
+    
+    //swirl
+    color = swirl(coord, vec2(0.0, 0.0), 100.0, 100.0, 50.0);
 
     gl_FragColor = vec4(color, 1.0); // output
 }
