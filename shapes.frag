@@ -17,6 +17,12 @@ bool close(float p1, float p2, float eps)
 }
 
 
+float deg2rad(float angle)
+{
+    return PI * angle / 180.0;
+}
+
+
 /*
  * Rotates the given coordinates by
  * theta rads. This changes the input
@@ -60,6 +66,37 @@ vec2 rotate(float theta, vec2 coord)
 vec2 scale(float s, vec2 coord)
 {
     return coord / s;
+}
+
+
+/*
+ * Draws a line between two points
+ */
+vec3 line(vec2 p1, vec2 p2, vec2 coord, float thickness)
+{
+    vec3 color = vec3(0.0);
+
+    if (!close(p1.x, p2.x, thickness))
+    {
+        float a = (p1.y - p2.y) / (p1.x - p2.x);
+        float b = p1.y - a * p1.x;
+
+        if (coord.x > min(p1.x, p2.x) && coord.x < max(p1.x, p2.x) &&
+            close(coord.y, a * coord.x + b, thickness))
+        {
+            color = vec3(1.0);
+        }
+    }
+    else 
+    {
+        if (coord.y > min(p1.y, p2.y) && coord.y < max(p1.y, p2.y) &&
+            close(coord.x, p1.x, thickness))
+        {
+            color = vec3(1.0);
+        }
+    }
+
+    return color;
 }
 
 
@@ -128,7 +165,8 @@ vec3 rect(float w, vec2 coord, float thickness, vec2 offset)
 /*
  * Draws a diamond on screen
  */
-vec3 diamond(float r, vec2 coord, float thickness, vec2 offset)
+vec3 diamond(float r, vec2 coord, 
+    float thickness, vec2 offset)
 {
     coord = rotate(PI/4.0, coord);
     return rect(r, r, coord, thickness, offset);
@@ -137,6 +175,36 @@ vec3 diamond(float r, vec2 coord, float thickness, vec2 offset)
 vec3 diamond(float r, vec2 coord, float thickness)
 {
     return diamond(r, coord, thickness, vec2(0.0));
+}
+
+
+vec3 polygon(int n_sides, float l, vec2 coord, 
+    float thickness, vec2 offset)
+{
+    const int MAX_SIDES = 100;
+    vec3 color = vec3(0.0);
+
+    vec2 p1 = vec2(0.0, l);
+    float angle = deg2rad(360.0 / float(n_sides));
+
+    int n = 0;
+    for (int n=0; n<MAX_SIDES; n++)
+    {
+        vec2 p2 = rotate(angle, p1);
+
+        color += line(p1, p2, coord, thickness);
+        p1 = p2;
+
+        if (n >= n_sides) break;
+    }
+
+    return color;
+}
+
+
+vec3 polygon(int n_sides, float l, vec2 coord, float thickness)
+{
+    return polygon(n_sides, l, coord, thickness, vec2(0.0));
 }
 
 
@@ -150,11 +218,14 @@ void main()
     float thickness = 0.005;
 
     rotate_coord(u_time, coord);
-    scale_coord(1.0, coord);
+    //scale_coord(1.0, coord);
 
     color = rect(0.5, coord, thickness);
     color += circle(0.5, coord, thickness);
     color += diamond(0.5, coord, thickness);
+
+    rotate_coord(u_time, coord);
+    color += polygon(6, 0.5, coord, thickness);
 
     gl_FragColor = vec4(color, 1.0);
 }
