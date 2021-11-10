@@ -208,19 +208,30 @@ vec3 polygon(int n_sides, float l, vec2 coord, float thickness)
 }
 
 
+float solid_polygon(float radius, float n_sides, vec2 coord)
+{
+    coord = coord * 2.0 - 1.0; // centers the polygon
+    float angle = atan(coord.x, coord.y);
+    float polyAngles = PI * 2.0 / n_sides; // gets the radians of every slice
+    return step(radius, 
+        cos(floor(0.5 + angle / polyAngles) * polyAngles - angle) * 
+            length(coord));
+}
+
+
 void main()
 {
     vec2 coord = (2.0 * gl_FragCoord.xy - u_resolution) / 
         min(u_resolution.y, u_resolution.x);
 
-    vec3 color = vec3(0.0);
+    vec3 color = vec3(0.1);
 
     float thickness = 0.005;
 
     rotate_coord(u_time, coord);
     //scale_coord(1.0, coord);
 
-    color = rect(0.5, coord, thickness);
+    color += rect(0.5, coord, thickness);
     color += circle(0.5, coord, thickness);
     color += diamond(0.5, coord, thickness);
 

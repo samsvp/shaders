@@ -9,7 +9,7 @@ uniform vec2 u_resolution;
 uniform float u_time;
 uniform vec2 u_mouse;
 
-uniform sampler2D u_tex0; // built in in glsl viewer
+uniform sampler2D u_tex0; // Monalisa-01_superres_petfal.png
 
 float noise1d(float v)
 {
@@ -110,7 +110,7 @@ vec3 waterColor(vec2 coord, vec3 color, int N, vec2 c1, vec3 rgb)
 {
     coord = izoom(coord, 15.0);
 
-    for(int n = 1; n < N; n++)
+    for(int n = 1; n < 5; n++)
     {
         float i = float(n);
         coord += vec2(c1.x + c1.y / i * sin(i * coord.y + u_time + 0.3 * i), 
@@ -142,7 +142,7 @@ vec3 waterColor2(vec2 coord, vec3 color, int amount, vec3 rgb)
     
     float len = 0.0;
 
-    for(int i = 0; i < amount; i++){
+    for(int i = 0; i < 5; i++){
         len = length(coord.xy);
         coord.x = coord.x - cos(coord.y + sin(len)) + cos(u_time / 5.0);
         coord.y = coord.y + sin(coord.x + cos(len)) + sin(u_time / 6.0);
@@ -240,7 +240,7 @@ vec3 movingLight(vec2 coord)
 vec3 lightCircle(vec2 coord, float radius, int n)
 {
     vec3 color = vec3(0.);
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < 5; i++)
     {
         float rad = radians(360. / float(n)) * float(i);
         color += 0.008 / length(coord + vec2(radius * cos(rad), radius * sin(rad)));    
@@ -315,7 +315,7 @@ void main()
     vec3 color = vec3(0.0);
     
     //color = warpGrid(coord, color);
-    //color = waterColor(coord, color, 3, vec2(0.8, 1.0), vec3(0.5, 0.5, 1.0));
+    color = waterColor(coord, color, 3, vec2(0.8, 1.0), vec3(0.5, 0.5, 1.0));
     //color = waterColor2(coord, color, 6, vec3(.1, 2.0, 1.0));
     
     // warp lines
@@ -340,22 +340,22 @@ void main()
     // color = boxGrid(color, 20.0, 20.0);
 
     // morph grid
-    color = morphGrid(coord, 10.0, 15.0, 10.0, 10.0);
+    // color = morphGrid(coord, 10.0, 15.0, 10.0, 10.0);
 
     // circle color pulse
     //color = circleColor(coord, .8);
     
     // images
-    coord = (gl_FragCoord.xy - u_resolution) / min(u_resolution.y, u_resolution.x); 
-    coord.x += 0.;
+    //coord = (gl_FragCoord.xy - u_resolution) / min(u_resolution.y, u_resolution.x); 
+    //coord.x += 0.;
 
-    vec4 image = texture2D(u_tex0, coord);
+    // vec4 image = texture2D(u_tex0, coord);
 
     // circle with image
-    coord = (2.0 * gl_FragCoord.xy - u_resolution) / min(u_resolution.y, u_resolution.x); 
-    image.rgb += circleColor(coord + vec2(0.03, -0.4), .4);
+    //coord = (2.0 * gl_FragCoord.xy - u_resolution) / min(u_resolution.y, u_resolution.x); 
+    //image.rgb += circleColor(coord + vec2(0.03, -0.4), .4);
 
-    color = mix(color, image.rgb, image.a);
+    //color = image.rgb;
 
     gl_FragColor = vec4(color, 1.0);
 }
