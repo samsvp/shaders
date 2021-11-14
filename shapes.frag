@@ -41,7 +41,7 @@ void rotate_coord(float theta, out vec2 coord)
  * Scales the given coordinates by s.
  * This changes the input coordinates
  */
-void scale_coord(float s, vec2 coord)
+void scale_coord(float s, out vec2 coord)
 {
     coord /= s;
 }
@@ -228,14 +228,13 @@ void main()
 
     float thickness = 0.005;
 
-    rotate_coord(u_time, coord);
-    //scale_coord(1.0, coord);
+    coord = rotate(u_time, coord);
 
     color += rect(0.5, coord, thickness);
     color += circle(0.5, coord, thickness);
     color += diamond(0.5, coord, thickness);
 
-    rotate_coord(u_time, coord);
+    coord = rotate(u_time, coord);
     color += polygon(6, 0.5, coord, thickness);
 
     gl_FragColor = vec4(color, 1.0);

@@ -54,20 +54,6 @@ float deg2rad(float angle)
 
 
 /*
- * Rotates the given coordinates by
- * theta rads. This changes the input
- * coordinates
- */
-void rotate_coord(float theta, out vec2 coord)
-{
-    mat2 R = mat2(cos(theta), -sin(theta),
-                  sin(theta), cos(theta));
-
-    coord *= R;
-}
-
-
-/*
  * Scales the given coordinates by s.
  * This changes the input coordinates
  */
