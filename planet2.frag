@@ -68,6 +68,7 @@ void main()
 
     coord = rotate(u_time, coord);
     coord = vec2(length(coord), atan(coord.y, coord.x));
+    //coord = vec2(length(coord), coord.x));
 
     vec3 color;
 

@@ -144,7 +144,7 @@ void main()
     float thickness = 0.005;
 
     //coord = rotate(u_time, coord);
-    coord = scale(0.1 * sin(u_time) + 0.8, coord);
+    coord = scale(0.1 * sin(u_time) + 1.0, coord);
 
     float r = 0.8;
 
