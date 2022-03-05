@@ -11,7 +11,7 @@ uniform vec2 u_resolution;
  */
 vec2 translate(vec2 coord, vec2 translation)
 {
-    return coord + translation * 0.5;
+    return translation * 0.5 + coord;
 }
 
 /*
@@ -38,8 +38,8 @@ float julia(vec2 coord, float _c_real, float _c_imag)
 {
     float n = -1.;
     
-    float c_real = _c_real + 0.05 * sin(u_time);
-    float c_imag = _c_imag + 0.05 * cos(u_time);
+    float c_real = 0.05 * sin(u_time) + _c_real;
+    float c_imag = 0.05 * cos(u_time) + _c_imag;
 
     float x = coord.x;
     float y = coord.y;

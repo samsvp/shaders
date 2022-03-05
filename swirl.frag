@@ -12,7 +12,7 @@ uniform vec2 u_resolution;
  */
 vec2 translate(vec2 coord, vec2 translation)
 {
-    return coord + translation * 0.5;
+    return translation * 0.5 + coord;
 }
 
 

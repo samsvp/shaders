@@ -6,13 +6,15 @@ uniform float u_time;
 uniform vec2 u_mouse;
 uniform vec2 u_resolution;
 
+
 /*
  * Translates the coordinates in the x and y axis
  */
 vec2 translate(vec2 coord, vec2 translation)
 {
-    return coord + translation * 0.5;
+    return translation * 0.5 + coord;
 }
+
 
 /*
  * Zooms the canvas in or out

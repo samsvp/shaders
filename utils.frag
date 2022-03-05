@@ -8,6 +8,25 @@ uniform float u_time;
 uniform vec2 u_resolution;
 
 
+
+/*
+ * Translates the coordinates in the x and y axis
+ */
+vec2 translate(vec2 coord, vec2 translation)
+{
+    return translation * 0.5 + coord;
+}
+
+
+/*
+ * Zooms the canvas in or out
+ */
+vec2 izoom(vec2 coord, float z)
+{
+    return coord * z;
+}
+
+
 float rand1d(float v)
 {
     return cos(v + cos(v * 90.1415) * 100.1415) * 0.5 + 0.5;
