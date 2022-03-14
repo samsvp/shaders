@@ -6,6 +6,7 @@ uniform float u_time;
 uniform vec2 u_mouse;
 uniform vec2 u_resolution;
 
+
 /*
  * Translates the coordinates in the x and y axis
  */
@@ -34,12 +35,9 @@ vec2 scale(vec2 coord, vec2 scale)
 }
 
 // https://en.wikipedia.org/wiki/Plotting_algorithms_for_the_Mandelbrot_set
-float julia(vec2 coord, float _c_real, float _c_imag)
+float julia(vec2 coord, float c_real, float c_imag)
 {
     float n = -1.;
-    
-    float c_real = 0.05 * sin(u_time) + _c_real;
-    float c_imag = 0.05 * cos(u_time) + _c_imag;
 
     float x = coord.x;
     float y = coord.y;
@@ -85,8 +83,9 @@ void main()
 
     // float c_real = -0.8;
     // float c_imag = 0.156;
-    float c_real = -0.7269;
-    float c_imag = 0.3;
+    
+    float c_real = 0.05 * sin(u_time) - 0.7269;
+    float c_imag = 0.05 * cos(u_time) + 0.3;
     float n = julia(coord, c_real, c_imag);
     
     float a = 0.1;
