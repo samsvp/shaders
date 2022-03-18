@@ -3,6 +3,10 @@
 precision mediump float;
 #endif
 
+#define N_STEPS 32
+#define MIN_HIT_DIST 0.001
+#define MAX_TRACE_DIST 1000.0
+
 // uniforms
 uniform float u_time;
 uniform vec2 u_mouse;
@@ -15,6 +19,12 @@ float sphere_sdf(vec3 p, vec3 center, float radius)
 }
 
 
+float plane(vec3 p)
+{
+    return p.y;
+}
+
+
 /*
  * Calculates distance from all sdfs on scene
  */
@@ -23,9 +33,10 @@ float sdf_dist(vec3 p)
     float displacement = 0.0; // (sin(5.0 * p.x + u_time) + 
         // 0.5 * cos(5.0 * p.y + 2.0 * u_time) + 
         // sin(3.0 * p.z + 5.0) * 0.25) / 5.0;
-    float sphere = sphere_sdf(p, vec3(0.0), 1.0);
+    float sphere = sphere_sdf(p, vec3(0.0, 1.0, 6.0), 1.0);
+    float plane_dist = plane(p);
 
-    return sphere + displacement;
+    return min(plane_dist, sphere);
 }
 
 
@@ -46,33 +57,21 @@ vec3 get_normal(vec3 p)
 }
 
 
-vec3 ray_march(vec3 ray_origin, vec3 ray_dir)
+float ray_march(vec3 ray_origin, 
+    vec3 ray_dir, out vec3 curr_pos)
 {
     float dist_traveled = 0.0;
-    const int N_STEPS = 32;
-    const float MIN_HIT_DIST = 0.001;
-    const float MAX_TRACE_DIST = 1000.0;
 
     for (int i=0; i<N_STEPS; i++)
     {
-        vec3 curr_pos = ray_origin + dist_traveled * ray_dir;
+        curr_pos = ray_origin + dist_traveled * ray_dir;
 
         float closest_dist = sdf_dist(curr_pos);
 
         if (closest_dist < MIN_HIT_DIST) // hit something
         {
-            // diffuse lighting
-            vec3 normal = get_normal(curr_pos);
-            vec3 light_pos = vec3(2.0, -2.5, 3.0);
-            vec3 light_dir = normalize(
-                curr_pos - light_pos
-            );
-            float intensity = max(0.0,
-                dot(normal, light_dir)
-            );
-            return intensity * vec3(1.0);
+            break;
         }
-
         if (dist_traveled > MAX_TRACE_DIST)
         {
             break;
@@ -81,8 +80,34 @@ vec3 ray_march(vec3 ray_origin, vec3 ray_dir)
         dist_traveled += closest_dist;
     }
 
-    return vec3(0);
+    return dist_traveled;
 }
+
+
+float get_shadow(vec3 p, vec3 light_pos)
+{
+    vec3 curr_pos = vec3(0.0);
+    float dist = ray_march(p, light_pos, curr_pos);
+    return dist < length(light_pos - p) ? 0.1 : 1.0;
+}
+
+
+float get_lighting(vec3 p)
+{
+    vec3 normal = get_normal(p);
+    vec3 light_pos = vec3(2.0, 2.5, 3.0);
+    vec3 light_dir = normalize(light_pos - p);
+    float intensity = max(
+        0.0, dot(normal, light_dir)
+    );
+
+    float shadow = get_shadow(
+        p + normal * 0.002, light_dir
+    );
+
+    return shadow * intensity;
+}
+
 
 
 void main()
@@ -91,10 +116,14 @@ void main()
     vec2 coord = 2.0 * gl_FragCoord.xy / 
         u_resolution.xy - 1.0;
     
-    vec3 cam_pos = vec3(0.0, 0.0, -5.0);
+    vec3 cam_pos = vec3(0.0, 1.0, 0.0);
     vec3 ray_dir = vec3(coord, 1.0);
 
-    vec3 color = ray_march(cam_pos, ray_dir);
+    vec3 curr_pos = vec3(0.0);
+    float dist = 1.0 - 
+        ray_march(cam_pos, ray_dir, curr_pos) / 12.0;
+    
+    vec3 color = vec3(get_lighting(curr_pos));
 
     gl_FragColor = vec4(color, 1.0);
 }
