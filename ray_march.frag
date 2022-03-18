@@ -30,16 +30,19 @@ float plane(vec3 p)
  */
 float sdf_dist(vec3 p)
 {
-    float displacement = 0.0; // (sin(5.0 * p.x + u_time) + 
-        // 0.5 * cos(5.0 * p.y + 2.0 * u_time) + 
-        // sin(3.0 * p.z + 5.0) * 0.25) / 5.0;
+    float displacement = 1 == 0 ? 0.0 : (sin(5.0 * p.x + u_time) + 
+        0.5 * cos(5.0 * p.y) + 
+        sin(3.0 * p.z + 5.0) * 0.25) / 5.0;
     float sphere = sphere_sdf(p, vec3(0.0, 1.0, 6.0), 1.0);
     float plane_dist = plane(p);
 
-    return min(plane_dist, sphere);
+    return min(plane_dist, sphere + displacement);
 }
 
 
+/*
+ * Returns the surface normal at the point "p"
+ */
 vec3 get_normal(vec3 p)
 {
     const vec3 delta = vec3(0.001, 0.0, 0.0);
@@ -57,6 +60,9 @@ vec3 get_normal(vec3 p)
 }
 
 
+/*
+ * Performs ray marching
+ */
 float ray_march(vec3 ray_origin, 
     vec3 ray_dir, out vec3 curr_pos)
 {
@@ -68,11 +74,8 @@ float ray_march(vec3 ray_origin,
 
         float closest_dist = sdf_dist(curr_pos);
 
-        if (closest_dist < MIN_HIT_DIST) // hit something
-        {
-            break;
-        }
-        if (dist_traveled > MAX_TRACE_DIST)
+        if (closest_dist < MIN_HIT_DIST || // hit
+            dist_traveled > MAX_TRACE_DIST)
         {
             break;
         }
@@ -84,14 +87,23 @@ float ray_march(vec3 ray_origin,
 }
 
 
+/*
+ * Computes shadows by calculating if
+ * there is an object between the point and
+ * the light source
+ */
 float get_shadow(vec3 p, vec3 light_pos)
 {
     vec3 curr_pos = vec3(0.0);
     float dist = ray_march(p, light_pos, curr_pos);
-    return dist < length(light_pos - p) ? 0.1 : 1.0;
+    float l = length(light_pos - p);
+    return dist < l ? dist / l : 1.0;
 }
 
 
+/*
+ * Lights the scene with diffuse lighting
+ */
 float get_lighting(vec3 p)
 {
     vec3 normal = get_normal(p);
