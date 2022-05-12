@@ -84,8 +84,8 @@ void main()
     // float c_real = -0.8;
     // float c_imag = 0.156;
     
-    float c_real = 0.05 * sin(u_time) - 0.7269;
-    float c_imag = 0.05 * cos(u_time) + 0.3;
+    float c_real = 0.05 * sin(u_time) - 0.5269;
+    float c_imag = 0.05 * cos(u_time) + 0.5;
     float n = julia(coord, c_real, c_imag);
     
     float a = 0.1;

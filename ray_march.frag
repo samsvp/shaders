@@ -30,13 +30,15 @@ float plane(vec3 p)
  */
 float sdf_dist(vec3 p)
 {
-    float displacement = 1 == 0 ? 0.0 : (sin(5.0 * p.x + u_time) + 
+    float displacement = 0 == 0 ? 0.0 : (sin(5.0 * p.x + u_time) + 
         0.5 * cos(5.0 * p.y) + 
         sin(3.0 * p.z + 5.0) * 0.25) / 5.0;
     float sphere = sphere_sdf(p, vec3(0.0, 1.0, 6.0), 1.0);
+    float sphere2 = sphere_sdf(p, vec3(2.0, 1.0, 6.0), 1.0);
     float plane_dist = plane(p);
 
-    return min(plane_dist, sphere + displacement);
+    float d = min(sphere + displacement, sphere2);
+    return min(plane_dist, d);
 }
 
 
@@ -114,7 +116,7 @@ float get_lighting(vec3 p)
     );
 
     float shadow = get_shadow(
-        p + normal * 0.002, light_dir
+        p + normal * 0.2, light_dir
     );
 
     return shadow * intensity;

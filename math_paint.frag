@@ -9,7 +9,7 @@ uniform vec2 u_mouse;
 uniform vec2 u_resolution;
 
 // we will draw using only the shader
-// the srawing is a palm tree
+// the drawing is a palm tree
 void main()
 {
     // coords are from 0 to 1
