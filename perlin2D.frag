@@ -1,13 +1,9 @@
-#version 130
-
 #ifdef GL_ES
 precision highp float;
 #endif
 
 uniform float u_time;
 uniform vec2 u_resolution;
-
-out vec4 fragColor;
 
 float rand1df(float v)
 {
@@ -19,7 +15,8 @@ float rand1dv2s(vec2 co, vec2 seed)
     return fract(sin(dot(co, seed)) * 43758.5453);
 }
 
-float rand1dv2(vec2 co){
+float rand1dv2(vec2 co)
+{
     return rand1dv2s(co, vec2(12.9898, 78.233));
 }
 
@@ -65,5 +62,5 @@ void main()
     float grid_size = 10.0;
     float v = perlin(uv, grid_size);
     v = smoothstep(0.4, 0.5, v * 0.5 + 0.5);
-    fragColor = vec4(vec3(v), 1);
+    gl_FragColor = vec4(vec3(v), 1);
 }
