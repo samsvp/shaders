@@ -78,11 +78,27 @@ float perlin(vec3 uv, float grid_size)
     return mix(p0, p1, f.z);
 }
 
+float fbm(vec3 uv, float grid_size)
+{
+    float A = 1.0;
+    float sum = 0.0;
+    float freq = 4.0;
+
+    for (int i = 0; i < 3; i++)
+    {
+        sum += A * perlin(uv, freq);
+        freq *= 2;
+        A /= 2;
+    }
+
+    return sum;
+}
+
 void main()
 {
     vec2 uv = (2.0 * gl_FragCoord.xy - u_resolution) / min(u_resolution.y, u_resolution.x);
     float grid_size = 4.0;
-    float v = perlin(vec3(uv, u_time * 0.1), grid_size);
+    float v = fbm(vec3(uv, u_time * 0.1), grid_size);
     v = smoothstep(0.45, 0.5, v * 0.5 + 0.5);
     gl_FragColor = vec4(vec3(v), 1);
 }

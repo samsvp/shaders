@@ -59,7 +59,7 @@ float perlin(vec2 uv, float grid_size)
 void main()
 {
     vec2 uv = (2.0 * gl_FragCoord.xy - u_resolution) / min(u_resolution.y, u_resolution.x);
-    float grid_size = 10.0;
+    float grid_size = 1.0;
     float v = perlin(uv, grid_size);
     v = smoothstep(0.4, 0.5, v * 0.5 + 0.5);
     gl_FragColor = vec4(vec3(v), 1);
