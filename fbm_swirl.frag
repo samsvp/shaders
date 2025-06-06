@@ -86,8 +86,8 @@ float fbm(vec3 uv, float freq)
     for (int i = 0; i < 2; i++)
     {
         sum += A * perlin(uv, freq);
-        freq *= 2;
-        A /= 2;
+        freq *= 2.0;
+        A /= 2.0;
     }
 
     return sum;
@@ -105,6 +105,15 @@ vec2 rotate(float theta, vec2 coord)
 void main()
 {
     vec2 uv = (2.0 * gl_FragCoord.xy - u_resolution) / min(u_resolution.y, u_resolution.x);
+    float p = 80.0;
+    uv = floor(uv) +(floor(p * uv) - p * floor(uv)) / p;
+
+        // 15.45
+
+          /**
+          15.454785 -> 1545.4785
+          15 -> 1500
+          */
 
     float effectRadius = 1.5;
     float effectAngle = 2. * PI;
