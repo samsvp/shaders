@@ -117,10 +117,9 @@ void closestColors(vec3 hsl, out vec3 closest, out vec3 secondClosest)
 vec3 dither(vec3 color)
 {
     vec3 hsl = RGBtoHSL(color);
-    vec3 colors[2];
-    closestColors(hsl, colors[0], colors[1]);
-    vec3 closestColor = colors[0];
-    vec3 secondClosestColor = colors[1];
+    vec3 closestColor = vec3(0.0);
+    vec3 secondClosestColor = vec3(0.0);
+    closestColors(hsl, closestColor, secondClosestColor);
     float d = indexValue();
     float hueDiff = hslDistance(hsl, closestColor) /
                     hslDistance(secondClosestColor, closestColor);
