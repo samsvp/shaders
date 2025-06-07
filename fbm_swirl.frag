@@ -2,6 +2,8 @@
 precision highp float;
 #endif
 
+#define PI 3.14159
+
 uniform float u_time;
 uniform vec2 u_resolution;
 
@@ -20,7 +22,6 @@ float rand1dv3(vec3 co)
     return rand1dv3s(co, vec3(12.9898, 78.233, 48.4867));
 }
 
-
 vec3 rand3d(vec3 value)
 {
     float u = rand1dv3(value);
@@ -34,6 +35,96 @@ vec3 rand3d(vec3 value)
         sin(phi) * sin(theta),
         cos(phi)
     );
+}
+
+vec3 HUEtoRGB(float H)
+{
+    float R = abs(H * 6.0 - 3.0) - 1.0;
+    float G = 2.0 - abs(H * 6.0 - 2.0);
+    float B = 2.0 - abs(H * 6.0 - 4.0);
+    return clamp(vec3(R,G,B), 0, 1);
+}
+
+vec3 HSLtoRGB(vec3 HSL)
+{
+    vec3 RGB = HUEtoRGB(HSL.x);
+    float C = (1.0 - abs(2.0 * HSL.z - 1.0)) * HSL.y;
+    return (RGB - 0.5) * C + HSL.z;
+}
+
+vec3 RGBtoHCV(vec3 RGB, float epsilon)
+{
+    // Based on work by Sam Hocevar and Emil Persson
+    vec4 P = (RGB.g < RGB.b) ? vec4(RGB.bg, -1.0, 2.0/3.0) : vec4(RGB.gb, 0.0, -1.0/3.0);
+    vec4 Q = (RGB.r < P.x) ? vec4(P.xyw, RGB.r) : vec4(RGB.r, P.yzx);
+    float C = Q.x - min(Q.w, Q.y);
+    float H = abs((Q.w - Q.y) / (6.0 * C + epsilon) + Q.z);
+    return vec3(H, C, Q.x);
+}
+
+vec3 RGBtoHSL(vec3 RGB)
+{
+    float epsilon = 1e-10;
+    vec3 HCV = RGBtoHCV(RGB, epsilon);
+    float L = HCV.z - HCV.y * 0.5;
+    float S = HCV.y / (1.0 - abs(L * 2.0 - 1.0) + epsilon);
+    return vec3(HCV.x, S, L);
+}
+
+vec3 palette[8];
+int paletteSize;
+
+int indexMatrix4x4[16];
+
+float indexValue()
+{
+    int x = int(mod(gl_FragCoord.x, 4.0));
+    int y = int(mod(gl_FragCoord.y, 4.0));
+    return float(indexMatrix4x4[(x + y * 4)]) / 16.0;
+}
+
+float hueDistance(float h1, float h2)
+{
+    float diff = abs((h1 - h2));
+    return min(abs((1.0 - diff)), diff);
+}
+
+float hslDistance(vec3 v1, vec3 v2)
+{
+    float d = length(v1.yz - v2.yz);
+    return d + hueDistance(v1.x, v2.x);
+}
+
+void closestColors(vec3 hsl, out vec3 closest, out vec3 secondClosest)
+{
+    closest = vec3(-2, 0, 0);
+    secondClosest = vec3(-2, 0, 0);
+    vec3 temp;
+    for (int i = 0; i < paletteSize; ++i) {
+        temp = palette[i];
+        float tempDistance = hslDistance(temp, hsl);
+        if (tempDistance < hslDistance(closest, hsl)) {
+            secondClosest = closest;
+            closest = temp;
+        } else {
+            if (tempDistance < hslDistance(secondClosest, hsl)) {
+                secondClosest = temp;
+            }
+        }
+    }
+}
+
+vec3 dither(vec3 color)
+{
+    vec3 hsl = RGBtoHSL(color);
+    vec3 colors[2];
+    closestColors(hsl, colors[0], colors[1]);
+    vec3 closestColor = colors[0];
+    vec3 secondClosestColor = colors[1];
+    float d = indexValue();
+    float hueDiff = hslDistance(hsl, closestColor) /
+                    hslDistance(secondClosestColor, closestColor);
+    return HSLtoRGB(hueDiff < d ? closestColor : secondClosestColor);
 }
 
 vec3 fade(vec3 t)
@@ -101,19 +192,34 @@ vec2 rotate(float theta, vec2 coord)
     return coord * R;
 }
 
-#define PI 3.14159
 void main()
 {
+    indexMatrix4x4[0] = 0;
+    indexMatrix4x4[1] = 8;
+    indexMatrix4x4[2] = 2;
+    indexMatrix4x4[3] = 10;
+    indexMatrix4x4[4] = 12;
+    indexMatrix4x4[5] = 4;
+    indexMatrix4x4[6] = 14;
+    indexMatrix4x4[7] = 6;
+    indexMatrix4x4[8] = 3;
+    indexMatrix4x4[9] = 11;
+    indexMatrix4x4[10] = 1;
+    indexMatrix4x4[11] = 9;
+    indexMatrix4x4[12] = 15;
+    indexMatrix4x4[13] = 7;
+    indexMatrix4x4[14] = 13;
+    indexMatrix4x4[15] = 5;
+
+    paletteSize = 4;
+    palette[0] = vec3(0, 0.72, 0.45);
+    palette[1] = vec3(0, 0.72, 0.25);
+    palette[2] = vec3(0, 0.72, 0.06);
+    palette[3] = vec3(0, 0.72, 0.51);
+
     vec2 uv = (2.0 * gl_FragCoord.xy - u_resolution) / min(u_resolution.y, u_resolution.x);
     float p = 80.0;
     uv = floor(uv) +(floor(p * uv) - p * floor(uv)) / p;
-
-        // 15.45
-
-          /**
-          15.454785 -> 1545.4785
-          15 -> 1500
-          */
 
     float effectRadius = 1.5;
     float effectAngle = 2. * PI;
@@ -137,5 +243,10 @@ void main()
     vec3 color = mix(vec3(191, 41, 31), vec3(148, 22, 13), v0);
     color = mix(color, vec3(97, 16, 10), v1);
     color = mix(color, vec3(54, 9, 6), v2) / 255.0;
-    gl_FragColor = vec4(color, 1);
+    bool shouldDither = true;
+    if (shouldDither) {
+        gl_FragColor = vec4(dither(color), 1);
+    } else {
+        gl_FragColor = vec4(color, 1);
+    }
 }
