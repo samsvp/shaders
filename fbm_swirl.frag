@@ -72,44 +72,42 @@ vec3 RGBtoHSL(vec3 RGB)
 }
 
 vec3 palette[8];
-int paletteSize;
+int palette_size;
 
-int indexMatrix4x4[16];
+int index_matrix4x4[16];
 
-float indexValue()
+float index_value()
 {
     int x = int(mod(gl_FragCoord.x, 4.0));
     int y = int(mod(gl_FragCoord.y, 4.0));
-    return float(indexMatrix4x4[(x + y * 4)]) / 16.0;
+    return float(index_matrix4x4[(x + y * 4)]) / 16.0;
 }
 
-float hueDistance(float h1, float h2)
+float hue_distance(float h1, float h2)
 {
     float diff = abs((h1 - h2));
     return min(abs((1.0 - diff)), diff);
 }
 
-float hslDistance(vec3 v1, vec3 v2)
+float hsl_distance(vec3 v1, vec3 v2)
 {
     float d = length(v1.yz - v2.yz);
-    return d + hueDistance(v1.x, v2.x);
+    return d + hue_distance(v1.x, v2.x);
 }
 
-void closestColors(vec3 hsl, out vec3 closest, out vec3 secondClosest)
+void closest_colors(vec3 hsl, out vec3 closest, out vec3 second_closest)
 {
     closest = vec3(-2, 0, 0);
-    secondClosest = vec3(-2, 0, 0);
+    second_closest = vec3(-2, 0, 0);
     vec3 temp;
-    for (int i = 0; i < paletteSize; ++i) {
+    for (int i = 0; i < palette_size; ++i) {
         temp = palette[i];
-        float tempDistance = hslDistance(temp, hsl);
-        if (tempDistance < hslDistance(closest, hsl)) {
-            secondClosest = closest;
+        float temp_distance = hsl_distance(temp, hsl);
+        if (temp_distance < hsl_distance(closest, hsl)) {
+            second_closest = closest;
             closest = temp;
-        } else {
-            if (tempDistance < hslDistance(secondClosest, hsl)) {
-                secondClosest = temp;
-            }
+        } else if (temp_distance < hsl_distance(second_closest, hsl)) {
+            second_closest = temp;
         }
     }
 }
@@ -117,13 +115,13 @@ void closestColors(vec3 hsl, out vec3 closest, out vec3 secondClosest)
 vec3 dither(vec3 color)
 {
     vec3 hsl = RGBtoHSL(color);
-    vec3 closestColor = vec3(0.0);
-    vec3 secondClosestColor = vec3(0.0);
-    closestColors(hsl, closestColor, secondClosestColor);
-    float d = indexValue();
-    float hueDiff = hslDistance(hsl, closestColor) /
-                    hslDistance(secondClosestColor, closestColor);
-    return HSLtoRGB(hueDiff < d ? closestColor : secondClosestColor);
+    vec3 closest_color = vec3(0.0);
+    vec3 second_closest_color = vec3(0.0);
+    closest_colors(hsl, closest_color, second_closest_color);
+    float d = index_value();
+    float hueDiff = hsl_distance(hsl, closest_color) /
+                    hsl_distance(second_closest_color, closest_color);
+    return HSLtoRGB(hueDiff < d ? closest_color : second_closest_color);
 }
 
 vec3 fade(vec3 t)
@@ -193,24 +191,24 @@ vec2 rotate(float theta, vec2 coord)
 
 void main()
 {
-    indexMatrix4x4[0] = 0;
-    indexMatrix4x4[1] = 8;
-    indexMatrix4x4[2] = 2;
-    indexMatrix4x4[3] = 10;
-    indexMatrix4x4[4] = 12;
-    indexMatrix4x4[5] = 4;
-    indexMatrix4x4[6] = 14;
-    indexMatrix4x4[7] = 6;
-    indexMatrix4x4[8] = 3;
-    indexMatrix4x4[9] = 11;
-    indexMatrix4x4[10] = 1;
-    indexMatrix4x4[11] = 9;
-    indexMatrix4x4[12] = 15;
-    indexMatrix4x4[13] = 7;
-    indexMatrix4x4[14] = 13;
-    indexMatrix4x4[15] = 5;
+    index_matrix4x4[0] = 0;
+    index_matrix4x4[1] = 8;
+    index_matrix4x4[2] = 2;
+    index_matrix4x4[3] = 10;
+    index_matrix4x4[4] = 12;
+    index_matrix4x4[5] = 4;
+    index_matrix4x4[6] = 14;
+    index_matrix4x4[7] = 6;
+    index_matrix4x4[8] = 3;
+    index_matrix4x4[9] = 11;
+    index_matrix4x4[10] = 1;
+    index_matrix4x4[11] = 9;
+    index_matrix4x4[12] = 15;
+    index_matrix4x4[13] = 7;
+    index_matrix4x4[14] = 13;
+    index_matrix4x4[15] = 5;
 
-    paletteSize = 4;
+    palette_size = 4;
     palette[0] = vec3(0, 0.72, 0.45);
     palette[1] = vec3(0, 0.72, 0.25);
     palette[2] = vec3(0, 0.72, 0.06);
