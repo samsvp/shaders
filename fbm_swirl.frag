@@ -218,13 +218,13 @@ void main()
     float p = 80.0;
     uv = floor(uv) +(floor(p * uv) - p * floor(uv)) / p;
 
-    float effectRadius = 1.5;
-    float effectAngle = 2. * PI;
+    float effect_radius = 1.5;
+    float effect_angle = 2. * PI;
 
     vec2 center = vec2(.5, .5);
 
-    float len = .4 * length(uv);
-    float angle = atan(uv.y, uv.x) + effectAngle * smoothstep(effectRadius, 0., len);
+    float len = .25 * length(uv);
+    float angle = atan(uv.y, uv.x) + effect_angle * smoothstep(effect_radius, 0., len);
     float radius = length(uv);
 
     uv = vec2(radius * cos(angle), radius * sin(angle)) + center;
@@ -237,13 +237,12 @@ void main()
     float v0 = smoothstep(0.2, 0.35, v);
     float v1 = smoothstep(0.45, 0.5, v);
     float v2 = smoothstep(0.6, 0.8, v);
-    vec3 color = mix(vec3(191, 41, 31), vec3(148, 22, 13), v0);
-    color = mix(color, vec3(97, 16, 10), v1);
-    color = mix(color, vec3(54, 9, 6), v2) / 255.0;
-    bool shouldDither = true;
-    if (shouldDither) {
-        gl_FragColor = vec4(dither(color), 1);
-    } else {
-        gl_FragColor = vec4(color, 1);
-    }
+    vec3 c0 = HSLtoRGB(palette[0]);
+    vec3 c1 = HSLtoRGB(palette[1]);
+    vec3 c2 = HSLtoRGB(palette[2]);
+    vec3 c3 = HSLtoRGB(palette[3]);
+    vec3 color = mix(c0, c1, v0);
+    color = mix(color, c2, v1);
+    color = mix(color, c3, v2);
+    gl_FragColor = vec4(dither(color), 1);
 }

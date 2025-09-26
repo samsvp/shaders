@@ -77,8 +77,8 @@ vec3 RGBtoHSL(vec3 RGB)
 
 float index_value(vec2 fragcoord)
 {
-	int index_matrix4x4[16];
-	index_matrix4x4[0] = 0;
+    int index_matrix4x4[16];
+    index_matrix4x4[0] = 0;
     index_matrix4x4[1] = 8;
     index_matrix4x4[2] = 2;
     index_matrix4x4[3] = 10;
@@ -114,11 +114,11 @@ float hsl_distance(vec3 v1, vec3 v2)
 
 void closest_colors(vec3 hsl, out vec3 closest, out vec3 second_closest)
 {
-	vec3 palette[4];
-	palette[0] = palette0;
-	palette[1] = palette1;
-	palette[2] = palette2;
-	palette[3] = palette3;
+    vec3 palette[4];
+    palette[0] = palette0;
+    palette[1] = palette1;
+    palette[2] = palette2;
+    palette[3] = palette3;
 
     closest = vec3(-2, 0, 0);
     second_closest = vec3(-2, 0, 0);
@@ -143,7 +143,7 @@ vec3 dither(vec2 fragcoord, vec3 color)
     closest_colors(hsl, closest_color, second_closest_color);
     float d = index_value(fragcoord);
     float hueDiff = hsl_distance(hsl, closest_color) /
-                    hsl_distance(second_closest_color, closest_color);
+        hsl_distance(second_closest_color, closest_color);
     return HSLtoRGB(hueDiff < d ? closest_color : second_closest_color);
 }
 
@@ -207,17 +207,17 @@ float fbm(vec3 uv, float freq)
 vec2 rotate(float theta, vec2 coord)
 {
     mat2 R = mat2(
-		vec2(cos(theta), -sin(theta)),
+        vec2(cos(theta), -sin(theta)),
         vec2(sin(theta), cos(theta))
-	);
+    );
 
     return coord * R;
 }
 
 void main() {
-	vec2 uv = (2.0 * gl_FragCoord.xy - u_resolution) / min(u_resolution.x, u_resolution.y);
+    vec2 uv = (2.0 * gl_FragCoord.xy - u_resolution) / min(u_resolution.x, u_resolution.y);
 
-	float p = 80.0;
+    float p = 80.0;
     uv = floor(uv) +(floor(p * uv) - p * floor(uv)) / p;
     float effect_radius = 1.5;
     float effect_angle = 2. * 3.14159;
@@ -238,10 +238,10 @@ void main() {
     float v0 = smoothstep(0.2, 0.35, v);
     float v1 = smoothstep(0.45, 0.5, v);
     float v2 = smoothstep(0.6, 0.8, v);
-	vec3 c0 = HSLtoRGB(palette0);
-	vec3 c1 = HSLtoRGB(palette1);
-	vec3 c2 = HSLtoRGB(palette2);
-	vec3 c3 = HSLtoRGB(palette3);
+    vec3 c0 = HSLtoRGB(palette0);
+    vec3 c1 = HSLtoRGB(palette1);
+    vec3 c2 = HSLtoRGB(palette2);
+    vec3 c3 = HSLtoRGB(palette3);
     vec3 color = mix(c0, c1, v0);
     color = mix(color, c2, v1);
     color = mix(color, c3, v2);
